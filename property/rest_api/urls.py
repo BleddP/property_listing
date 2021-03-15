@@ -5,15 +5,15 @@ router = routers.DefaultRouter()
 router.register('api/account-managers',
                 AccountManagerViewSet, 'account manager')
 router.register('api/real-estate-agencies',
-                RealEstateAgencyViewSet, 'account manager')
-router.register('api/agents', AgentViewSet, 'account manager')
-router.register('api/users', UserViewSet, 'account manager')
-router.register('api/properties', PropertyTypeViewSet, 'account manager')
-router.register('api/stations', StationViewSet, 'account manager')
-router.register('api/schools', SchoolViewSet, 'account manager')
-router.register('api/cities', CityViewSet, 'account manager')
-router.register('api/areas', AreaViewSet, 'account manager')
-router.register('api/property-types', PropertyTypeViewSet, 'account manager')
+                RealEstateAgencyViewSet, 'real estate agencies')
+router.register('api/agents', AgentViewSet, 'agents')
+router.register('api/users', UserViewSet, 'users')
+router.register('api/properties', PropertyViewSet, 'properties')
+router.register('api/stations', StationViewSet, 'stations')
+router.register('api/schools', SchoolViewSet, 'schools')
+router.register('api/cities', CityViewSet, 'cities')
+router.register('api/areas', AreaViewSet, 'areas')
+router.register('api/property-types', PropertyTypeViewSet, 'property types')
 
 
 urlpatterns = router.urls

@@ -7,18 +7,24 @@ from .models import AccountManager, RealEstateAgency, Agent, User, Property, Sta
 
 
 class AccountManagerSerializer(serializers.ModelSerializer):
+    clients = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = AccountManager
         fields = '__all__'
 
 
 class RealEstateAgencySerializer(serializers.ModelSerializer):
+    employees = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = RealEstateAgency
         fields = '__all__'
 
 
 class AgentSerializer(serializers.ModelSerializer):
+    property_portfolio = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Agent
         fields = '__all__'
@@ -31,12 +37,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PropertySerializer(serializers.ModelSerializer):
+    agent = AgentSerializer(many=False, read_only=True)
+
     class Meta:
         model = Property
         fields = '__all__'
 
 
 class StationSerializer(serializers.ModelSerializer):
+    nearby_properties = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Station
         fields = '__all__'
@@ -49,12 +59,16 @@ class SchoolSerializer(serializers.ModelSerializer):
 
 
 class CitySerializer(serializers.ModelSerializer):
+    city_properties = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = City
         fields = '__all__'
 
 
 class AreaSerializer(serializers.ModelSerializer):
+    in_city = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Area
         fields = '__all__'

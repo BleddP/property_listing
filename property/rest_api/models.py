@@ -9,8 +9,6 @@ class AccountManager(models.Model):
     account_manager_last_name: models.CharField(max_length=30)
     account_manager_email: models.CharField(max_length=30)
     account_manager_phone: models.IntegerField()
-    account_manager_clients: models.ForeignKey(
-        "RealEstateAgency", on_delete=models.CASCADE, null=True, blank=True)
     account_manager_join_date: models.DateField()
     account_manager_total_revenue: models.IntegerField()
     account_manager_this_year_revenue: models.IntegerField()
@@ -38,11 +36,7 @@ class RealEstateAgency(models.Model):
     phone = models.IntegerField()
     email = models.CharField(max_length=30)
     account_manager = models.ForeignKey(
-        "AccountManager", on_delete=models.CASCADE, null=True, blank=True)
-    agents = models.ForeignKey(
-        "Agent", on_delete=models.CASCADE, null=True, blank=True)
-    properties = models.ForeignKey(
-        "Property", on_delete=models.CASCADE, null=True, blank=True)
+        "AccountManager", on_delete=models.CASCADE, null=True, blank=True, related_name='clients')
     MEMBERSHIP_LEVELS = (
         ('Standard', 'Standard'),
         ('Professional', 'Professional'),
@@ -69,20 +63,19 @@ class Agent(models.Model):
     whatsapp = models.CharField(max_length=25, blank=True)
     wechat = models.CharField(max_length=25, blank=True)
     skype = models.CharField(max_length=25, blank=True)
-    agency = models.ForeignKey("RealEstateAgency", on_delete=models.CASCADE)
+    agency = models.ForeignKey(
+        "RealEstateAgency", on_delete=models.CASCADE, related_name='employees')  # An agent can only have one employer
     experience = models.IntegerField()
     address_line_1 = models.CharField(max_length=30)
     address_line_2 = models.CharField(max_length=30, blank=True)
     address_line_3 = models.CharField(max_length=30, blank=True)
     postcode = models.CharField(max_length=30)
-    area = models.ForeignKey(
-        "Area", on_delete=models.CASCADE, blank=True, null=True)
-    city = models.ForeignKey("City", on_delete=models.CASCADE)
+    # An agent can only have one city
+    city = models.ForeignKey(
+        "City", on_delete=models.CASCADE, related_name='agents')
     latitude = models.CharField(max_length=30, blank=True)
     longitude = models.CharField(max_length=30, blank=True)
     website = models.CharField(max_length=30, blank=True)
-    properties = models.ForeignKey(
-        "Property", on_delete=models.CASCADE, related_name='agencies', blank=True, null=True)
     industry_affiliations = models.CharField(max_length=30, blank=True)
     blacklisted = models.BooleanField(default=False)
     featured = models.BooleanField(default=False)
@@ -96,12 +89,6 @@ class User(models.Model):
     last_name = models.CharField(max_length=20)
     email = models.CharField(max_length=30)
     phone = models.CharField(max_length=25, blank=True)
-    saved_properties = models.ForeignKey(
-        "Property", on_delete=models.CASCADE, related_name="saved_properties", blank=True, null=True)
-    viewed_properties = models.ForeignKey(
-        "Property", on_delete=models.CASCADE, related_name="property_history", blank=True, null=True)
-    saved_agents = models.ForeignKey(
-        "Agent", on_delete=models.CASCADE, related_name="agent_history", blank=True, null=True)
     blacklisted = models.BooleanField(default=False)
 
     def __str__(self):
@@ -120,13 +107,13 @@ class Property(models.Model):
     address_line_3 = models.CharField(max_length=30, blank=True)
     postcode = models.CharField(max_length=30)
     area = models.ForeignKey(
-        "Area", on_delete=models.CASCADE, blank=True, null=True)
+        "Area", on_delete=models.CASCADE, blank=True, null=True, related_name='nearby_properties')  # A property can only have one Area
     city = models.ForeignKey(
-        "City", on_delete=models.CASCADE, blank=True, null=True)
+        "City", on_delete=models.CASCADE, blank=True, null=True, related_name='city_properties')  # A property can only have one City
     latitude = models.CharField(max_length=30)
     longitude = models.CharField(max_length=30)
     property_type = models.ForeignKey(
-        "PropertyType", on_delete=models.CASCADE, related_name="property_type", blank=True, null=True)
+        "PropertyType", on_delete=models.CASCADE, related_name="properties", blank=True, null=True)  # A property can only have one property type
     which_floor = models.IntegerField()
     total_square_m = models.IntegerField()
     total_square_ft = models.IntegerField()
@@ -137,9 +124,9 @@ class Property(models.Model):
     property_description_short = models.CharField(max_length=500)
     property_description_long = models.CharField(max_length=1500)
     nearby_stations = models.ForeignKey(
-        "Station", on_delete=models.CASCADE, related_name="station_area", blank=True, null=True)
+        "Station", on_delete=models.CASCADE, related_name="nearby_properties", blank=True, null=True)
     nearby_schools = models.ForeignKey(
-        "School", on_delete=models.CASCADE, related_name="school_area", blank=True, null=True)
+        "School", on_delete=models.CASCADE, related_name="nearby_properties", blank=True, null=True)
     parking_spaces = models.IntegerField()
     parking_type = models.CharField(max_length=10, blank=True)
     property_viewed = models.IntegerField()
@@ -148,7 +135,7 @@ class Property(models.Model):
     previous_owners = models.IntegerField()
     developer = models.CharField(max_length=50, blank=True)
     agent = models.ForeignKey(
-        "Agent", on_delete=models.CASCADE, related_name="selling_agent")
+        "Agent", on_delete=models.CASCADE, related_name="property_portfolio")  # A property can only have one agent
     listing_date = models.DateField()
     notes = models.CharField(max_length=500, blank=True)
     key_feature_1 = models.CharField(max_length=50, blank=True)
@@ -207,13 +194,9 @@ class Station(models.Model):
     train_lines = models.CharField(max_length=30)
     nearby_bus_stations = models.CharField(max_length=30)
     area = models.ForeignKey(
-        "Area", on_delete=models.CASCADE, blank=True, null=True)
+        "Area", on_delete=models.CASCADE, blank=True, null=True)  # A Station an only have one area
     city = models.ForeignKey(
-        "City", on_delete=models.CASCADE, blank=True, null=True)
-    nearby_properties = models.ForeignKey(
-        "Property", on_delete=models.CASCADE, related_name="area_properties", blank=True, null=True)
-    nearby_agents = models.ForeignKey(
-        "Agent", on_delete=models.CASCADE, related_name="area_agents", blank=True, null=True)
+        "City", on_delete=models.CASCADE, blank=True, null=True)  # A station can only have one city
 
     def __str__(self):
         return f'{self.station_name}, {self.city}'
@@ -224,17 +207,13 @@ class School(models.Model):
     school_name = models.CharField(max_length=30)
     school_type = models.CharField(max_length=30)
     area = models.ForeignKey(
-        "Area", on_delete=models.CASCADE, blank=True, null=True)
+        "Area", on_delete=models.CASCADE, blank=True, null=True)  # A School can only have one area
     city = models.ForeignKey(
-        "City", on_delete=models.CASCADE, blank=True, null=True)
+        "City", on_delete=models.CASCADE, blank=True, null=True)  # A School can only have one City
     latitude = models.CharField(max_length=30, blank=True)
     longitude = models.CharField(max_length=30, blank=True)
     train_lines = models.CharField(max_length=30)
     nearby_bus_stations = models.CharField(max_length=30)
-    nearby_properties = models.ForeignKey(
-        "Property", on_delete=models.CASCADE, related_name="school_area_properties", blank=True, null=True)
-    nearby_agents = models.ForeignKey(
-        "Agent", on_delete=models.CASCADE, related_name="school_area_agents", blank=True, null=True)
     average_property_price = models.IntegerField()
 
     def __str__(self):
@@ -244,13 +223,9 @@ class School(models.Model):
 class City(models.Model):
     city_id = models.IntegerField(unique=True)
     city_name = models.CharField(max_length=30)
-    areas = models.ForeignKey(
-        "Area", on_delete=models.CASCADE, related_name="in_city", null=True, blank=True)
     country = models.CharField(max_length=30)
     properties = models.ForeignKey(
-        "Property", on_delete=models.CASCADE, related_name="city_properties", blank=True, null=True)
-    agencies = models.ForeignKey("RealEstateAgency", on_delete=models.CASCADE,
-                                 related_name="city_agencies", blank=True, null=True)
+        "Property", on_delete=models.CASCADE, related_name="properties", blank=True, null=True)
     average_property_price = models.IntegerField()
 
     def __str__(self):
@@ -260,18 +235,11 @@ class City(models.Model):
 class Area(models.Model):
     area_id = models.IntegerField(unique=True)
     area_name = models.CharField(max_length=30)
-    city = models.ForeignKey("City", on_delete=models.CASCADE)
+    # An area can only have one city
+    city = models.ForeignKey(
+        "City", on_delete=models.CASCADE, related_name='districts')
     latitude = models.CharField(max_length=30, blank=True)
     longitude = models.CharField(max_length=30, blank=True)
-    nearby_properties = models.ForeignKey(
-        "Property", on_delete=models.CASCADE, related_name="neighbourhood_properties", blank=True, null=True)
-    nearby_agents = models.ForeignKey(
-        "Agent", on_delete=models.CASCADE, related_name="neighbourhood_agencies", blank=True, null=True)
-    nearby_schools = models.ForeignKey(
-        "School", on_delete=models.CASCADE, related_name="neighbourhood_schools", blank=True, null=True)
-    nearby_stations = models.ForeignKey(
-        "Station", on_delete=models.CASCADE, related_name="neighbourhood_stations", blank=True, null=True)
-    average_property_price = models.IntegerField()
 
     def __str__(self):
         return f'{self.area_name}, {self.city}'
