@@ -16,7 +16,7 @@ Most of the web apps and designs in Taiwan are out of date, so there is a strong
 To get this show on the road, clone the repo:
 
 ```
-git clone https://github.com/BleddP/property_taiwan.git
+git clone https://github.com/BleddP/property_listing.git
 ```
 
 Install your dependencies
